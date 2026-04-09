@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "MVP wallet service for Demo Credit lending app",
   "main": "dist/server.js",
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=9.0.0"
+  },
   "scripts": {
     "build": "tsc",
     "start": "node dist/server.js",
