@@ -6,7 +6,7 @@ export const config = {
   env: process.env.NODE_ENV || "development",
   port: parseInt(process.env.PORT || "3000", 10),
   db: {
-    storage: process.env.DB_STORAGE || "./data/demo_credit.sqlite",
+    storage: process.env.DB_STORAGE || (process.env.NODE_ENV === "production" ? "/tmp/demo_credit.sqlite" : "./data/demo_credit.sqlite"),
   },
   jwt: {
     secret: process.env.JWT_SECRET || "default-secret-change-me",

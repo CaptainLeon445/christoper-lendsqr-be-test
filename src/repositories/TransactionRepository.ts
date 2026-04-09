@@ -29,7 +29,7 @@ export class TransactionRepository
     data: Partial<ITransactionAttributes>,
     transaction: unknown
   ): Promise<ITransactionAttributes> {
-    const record = await Transaction.create(data as any, { transaction } as any);
+    const record = (await Transaction.create(data as any, { transaction } as any)) as Transaction;
     return record.get({ plain: true }) as ITransactionAttributes;
   }
 }

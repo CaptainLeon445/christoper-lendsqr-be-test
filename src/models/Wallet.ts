@@ -43,7 +43,7 @@ export class Wallet extends Model<IWalletAttributes> implements IWalletAttribute
     return Wallet;
   }
 
-  static associate(models: { User: typeof Model; Transaction: typeof Model }): void {
+  static associate(models: Record<string, any>): void {
     Wallet.belongsTo(models.User, { foreignKey: "userId", as: "user" });
     Wallet.hasMany(models.Transaction, { foreignKey: "walletId", as: "transactions" });
   }

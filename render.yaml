@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: demo-credit-wallet-service
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_STORAGE
+        value: /tmp/demo_credit.sqlite
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRY
+        value: 24h
+      - key: LOG_LEVEL
+        value: info
+      - key: ADJUTOR_BASE_URL
+        value: https://adjutor.lendsqr.com/v2
+      - key: ADJUTOR_API_KEY
+        sync: false

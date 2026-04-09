@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import { Sequelize } from "sequelize";
 import { config } from "./index";
 
@@ -6,6 +8,12 @@ export class Database {
 
   static getInstance(): Sequelize {
     if (!Database.instance) {
+      // Ensure the parent directory of the SQLite file exists
+      const storageDir = path.dirname(path.resolve(config.db.storage));
+      if (!fs.existsSync(storageDir)) {
+        fs.mkdirSync(storageDir, { recursive: true });
+      }
+
       Database.instance = new Sequelize({
         dialect: "sqlite",
         storage: config.db.storage,

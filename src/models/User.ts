@@ -49,7 +49,7 @@ export class User extends Model<IUserAttributes> implements IUserAttributes {
     return User;
   }
 
-  static associate(models: { Wallet: typeof Model }): void {
+  static associate(models: Record<string, any>): void {
     User.hasOne(models.Wallet, { foreignKey: "userId", as: "wallet" });
   }
 }

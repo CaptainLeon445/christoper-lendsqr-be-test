@@ -1,7 +1,7 @@
 import { Model, ModelStatic } from "sequelize";
 import { IRepository } from "../types/interfaces";
 
-export abstract class BaseRepository<T extends Record<string, unknown>> implements IRepository<T> {
+export abstract class BaseRepository<T extends object> implements IRepository<T> {
   constructor(protected readonly model: ModelStatic<Model<T>>) {}
 
   async findById(id: string): Promise<T | null> {

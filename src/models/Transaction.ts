@@ -76,7 +76,7 @@ export class Transaction extends Model<ITransactionAttributes> implements ITrans
     return Transaction;
   }
 
-  static associate(models: { Wallet: typeof Model }): void {
+  static associate(models: Record<string, any>): void {
     Transaction.belongsTo(models.Wallet, { foreignKey: "walletId", as: "wallet" });
     Transaction.belongsTo(models.Wallet, { foreignKey: "counterpartyWalletId", as: "counterpartyWallet" });
   }
