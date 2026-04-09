@@ -1,6 +1,6 @@
 # Demo Credit Wallet Service
 
-MVP wallet service for the Demo Credit mobile lending application. Built with NodeJS, TypeScript, Express, Sequelize, and MySQL.
+MVP wallet service for the Demo Credit mobile lending application. Built with NodeJS, TypeScript, Express, Sequelize, and SQLite.
 
 ## Architecture
 
@@ -28,6 +28,7 @@ src/
 - **PII Compliance**: Winston logger strips emails, phone numbers, card numbers, passwords, and tokens from all log output. Request logger middleware redacts sensitive body fields before logging.
 - **Faux Auth**: JWT-based token authentication. Passwords hashed with PBKDF2 (salt + 10k iterations).
 - **Karma Blacklist**: Adjutor API integration checks email against Lendsqr blacklist during registration. Users on the blacklist are rejected with 403.
+- **SQLite over MySQL**: Development and evaluation use SQLite — zero-config, file-based, no server required. Sequelize's dialect abstraction means a production switch to MySQL/PostgreSQL requires only a one-line config change (see [Database section](#database)).
 
 ## E-R Diagram
 
@@ -37,9 +38,9 @@ src/
 ├─────────────────┤       ├─────────────────┤       ├─────────────────────┤
 │ id (PK, UUID)   │──1:1──│ id (PK, UUID)   │──1:N──│ id (PK, UUID)       │
 │ email (UNIQUE)  │       │ user_id (FK, UQ) │       │ wallet_id (FK)      │
-│ first_name      │       │ balance DECIMAL  │       │ type ENUM           │
+│ first_name      │       │ balance DECIMAL  │       │ type VARCHAR(20)    │
 │ last_name       │       │ created_at       │       │ amount DECIMAL      │
-│ password         │       │ updated_at       │       │ status ENUM         │
+│ password         │       │ updated_at       │       │ status VARCHAR(20)  │
 │ created_at      │       └─────────────────┘       │ reference (UNIQUE)  │
 │ updated_at      │                                  │ narration           │
 └─────────────────┘                                  │ counterparty_wallet │
@@ -68,6 +69,12 @@ src/
 | GET    | `/api/v1/wallet/transactions`| Yes  | Transaction history      |
 | GET    | `/health`                    | No   | Health check             |
 
+### Interactive API Docs (Swagger UI)
+
+Once the server is running, open **http://localhost:3000/api-docs** in your browser for the full interactive Swagger UI. The raw OpenAPI JSON is available at `GET /api-docs.json`.
+
+Click **Authorize** and paste your JWT (obtained from `/auth/login` or `/auth/register`) to unlock authenticated endpoints directly in the browser.
+
 ## Setup
 
 ```bash
@@ -77,7 +84,7 @@ make install
 # Copy env and configure
 cp .env.example .env
 
-# Run in development
+# Run in development (tables auto-created on first start via sequelize.sync())
 make dev
 
 # Build for production
@@ -90,21 +97,37 @@ make test
 make test-unit
 ```
 
+> **No database server needed.** The SQLite file is created automatically at `./data/demo_credit.sqlite` on first start.
+
+## Database
+
+The app uses **SQLite** via Sequelize. Tables are created automatically by `sequelize.sync()` at startup — no manual migration step needed for development.
+
+**Switching to MySQL/PostgreSQL for production:**
+1. Install the driver: `npm install mysql2` (already present) or `npm install pg pg-hstore`
+2. In `src/config/database.ts`, change:
+   ```ts
+   dialect: "sqlite", storage: "..."
+   // to:
+   dialect: "mysql",  // or "postgres"
+   host: ..., port: ..., database: ..., username: ..., password: ...
+   ```
+3. Update the `DB_*` env vars accordingly.
+
+The migration scripts in `src/migrations/` can be run via `sequelize-cli` if you need reproducible schema management in staging/production.
+
 ## Environment Variables
 
-| Variable          | Description                       |
-|-------------------|-----------------------------------|
-| `NODE_ENV`        | Environment (development/production) |
-| `PORT`            | Server port (default: 3000)       |
-| `DB_HOST`         | MySQL host                        |
-| `DB_PORT`         | MySQL port                        |
-| `DB_NAME`         | MySQL database name               |
-| `DB_USER`         | MySQL user                        |
-| `DB_PASSWORD`     | MySQL password                    |
-| `JWT_SECRET`      | Secret for JWT signing            |
-| `JWT_EXPIRY`      | Token expiry (e.g., 24h)         |
-| `ADJUTOR_BASE_URL`| Lendsqr Adjutor API base URL     |
-| `ADJUTOR_API_KEY` | Adjutor API key                   |
+| Variable          | Description                                      | Default                      |
+|-------------------|--------------------------------------------------|------------------------------|
+| `NODE_ENV`        | Environment (`development` / `production`)       | `development`                |
+| `PORT`            | Server port                                      | `3000`                       |
+| `DB_STORAGE`      | Path to the SQLite database file                 | `./data/demo_credit.sqlite`  |
+| `JWT_SECRET`      | Secret for JWT signing                           | *(required in production)*   |
+| `JWT_EXPIRY`      | Token lifetime (e.g., `24h`)                     | `24h`                        |
+| `ADJUTOR_BASE_URL`| Lendsqr Adjutor API base URL                     | `https://adjutor.lendsqr.com/v2` |
+| `ADJUTOR_API_KEY` | Adjutor API key                                  | *(required)*                 |
+| `LOG_LEVEL`       | Winston log level                                | `info`                       |
 
 ## Request/Response Examples
 
@@ -153,10 +176,10 @@ Authorization: Bearer <token>
 - **Runtime**: Node.js (LTS)
 - **Language**: TypeScript
 - **Framework**: Express
-- **ORM**: Sequelize
-- **Database**: MySQL
+- **ORM**: Sequelize v6
+- **Database**: SQLite (via `sqlite3`) — zero-config, file-based
+- **API Docs**: swagger-jsdoc + swagger-ui-express (OpenAPI 3.0)
 - **DI Container**: Inversify
 - **Logging**: Winston (PII-compliant)
 - **Testing**: Jest with ts-jest
 - **Security**: Helmet, CORS, express-rate-limit
-# christoper-lendsqr-be-test
